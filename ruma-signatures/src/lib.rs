@@ -51,7 +51,7 @@ use std::{
 
 pub use functions::{
     canonical_json, content_hash, hash_and_sign_event, redact, reference_hash, sign_json,
-    verify_event, verify_json,
+    verify_event, verify_json, JsonObject,
 };
 pub use keys::{Ed25519KeyPair, KeyPair, PublicKeyMap, PublicKeySet};
 pub use signatures::Signature;
@@ -204,7 +204,7 @@ mod test {
     fn test_canonical_json(input: &str) -> String {
         let value = from_str::<Value>(input).unwrap();
 
-        canonical_json(&value).unwrap()
+        canonical_json(value.as_object().unwrap())
     }
 
     #[test]
@@ -346,7 +346,7 @@ mod test {
         });
 
         let mut alpha_value = to_value(alpha).expect("alpha should serialize");
-        sign_json("domain", &key_pair, &mut alpha_value).unwrap();
+        sign_json("domain", &key_pair, alpha_value.as_object_mut().unwrap()).unwrap();
 
         assert_eq!(
             to_string(&alpha_value).unwrap(),
@@ -355,7 +355,7 @@ mod test {
 
         let mut reverse_alpha_value =
             to_value(reverse_alpha).expect("reverse_alpha should serialize");
-        sign_json("domain", &key_pair, &mut reverse_alpha_value).unwrap();
+        sign_json("domain", &key_pair, reverse_alpha_value.as_object_mut().unwrap()).unwrap();
 
         assert_eq!(
             to_string(&reverse_alpha_value).unwrap(),
@@ -423,7 +423,13 @@ mod test {
         }"#;
 
         let mut value = from_str::<Value>(json).unwrap();
-        hash_and_sign_event("domain", &key_pair, &mut value, &RoomVersionId::Version5).unwrap();
+        hash_and_sign_event(
+            "domain",
+            &key_pair,
+            value.as_object_mut().unwrap(),
+            &RoomVersionId::Version5,
+        )
+        .unwrap();
 
         assert_eq!(
             to_string(&value).unwrap(),
@@ -456,7 +462,13 @@ mod test {
         }"#;
 
         let mut value = from_str::<Value>(json).unwrap();
-        hash_and_sign_event("domain", &key_pair, &mut value, &RoomVersionId::Version5).unwrap();
+        hash_and_sign_event(
+            "domain",
+            &key_pair,
+            value.as_object_mut().unwrap(),
+            &RoomVersionId::Version5,
+        )
+        .unwrap();
 
         assert_eq!(
             to_string(&value).unwrap(),
